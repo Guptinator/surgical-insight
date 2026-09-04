@@ -138,13 +138,20 @@ COLORS = {
 }
 
 
-# ── Retrained model v2 (individual anatomical level flags, AUC 0.710) ─────────
-INTERCEPT_V2 = -5.682986
+# ── Calibrated ALIF risk model (AUC 0.613, properly calibrated probabilities) ──
+# Fit WITHOUT class_weight — intercept reflects true base rate (~12.1%)
+# Level flags removed (collinear at n=331); Num_Levels count used instead
+INTERCEPT_V2 = -5.7705
 COEF_V2 = {
-    "Age": 0.042600, "Sex_Binary": -0.089100, "BMI": -0.018600,
-    "ASA": 0.600200, "Prior_Abd_Surg_Flag": 0.165000, "Revision_Flag": -0.679300,
-    "ET": 0.005500, "ST": 0.015900,
-    "L5S1": 0.709000, "L4L5": -0.276100, "L3L4": -1.513500, "L2L3": -0.189200,
+    "Age":                +0.0392,
+    "Sex_Binary":         -0.1863,
+    "BMI":                +0.0057,
+    "ASA":                +0.5797,
+    "Prior_Abd_Surg_Flag":-0.1415,
+    "Revision_Flag":      -0.1789,
+    "ET":                 +0.0109,
+    "ST":                 +0.0030,
+    "Num_Levels":         -0.3850,
 }
 ET_PREFILL = {
     "L5-S1 only": 15, "L4-5 only": 25, "L4-S1": 30, "L3-S1": 30, "other": 17,
@@ -157,14 +164,15 @@ def calc_et_prefill(l5, l4, l3, l2):
     return ET_PREFILL["L5-S1 only"]
 
 def alif_risk_v2(age, sex, bmi, asa, abd, rev, et, st, l5, l4, l3, l2):
+    """Calibrated. Expected range: ~3% (lowest risk) to ~25% (highest risk)."""
+    num_levels = l5 + l4 + l3 + l2
     logit = (INTERCEPT_V2
              + COEF_V2["Age"]*age + COEF_V2["Sex_Binary"]*sex
              + COEF_V2["BMI"]*bmi + COEF_V2["ASA"]*asa
              + COEF_V2["Prior_Abd_Surg_Flag"]*abd + COEF_V2["Revision_Flag"]*rev
              + COEF_V2["ET"]*et + COEF_V2["ST"]*st
-             + COEF_V2["L5S1"]*l5 + COEF_V2["L4L5"]*l4
-             + COEF_V2["L3L4"]*l3 + COEF_V2["L2L3"]*l2)
-    return float(np.clip(1 / (1 + np.exp(-logit)), 0.02, 0.97))
+             + COEF_V2["Num_Levels"]*num_levels)
+    return float(np.clip(1 / (1 + np.exp(-logit)), 0.01, 0.99))
 
 def logistic_prob(age, sex, bmi, asa, abd, rev, et, st, hs, lvl, spondy=0):
     logit = (INTERCEPT +
@@ -694,7 +702,7 @@ with tabs[5]:
         "All inputs can be manually adjusted."
     )
     st.caption(f"Model: Logistic regression retrained with anatomical level flags · "
-               f"AUC = 0.710 (5-fold CV) · n=331 · 52 events")
+               f"AUC = 0.613 (5-fold CV, calibrated) · n=331 · 40 events · base rate 12.1%")
     st.markdown("---")
 
     col_inp, col_out = st.columns([1, 1])
@@ -748,15 +756,15 @@ with tabs[5]:
                         rc_et, rc_st, l5_v, l4_v, l3_v, l2_v)
     risk_pct = round(risk * 100, 1)
 
-    if risk_pct < 12:
+    if risk_pct < 10:
         risk_label, risk_bg, risk_tc = "Low risk",      "#EAF3DE", "#27500A"
-        advice = "Proceed with standard monitoring. Routine ALIF risk counselling applies."
-    elif risk_pct < 22:
+        advice = "Below population average (12.1%). Proceed with standard monitoring and routine ALIF risk counselling."
+    elif risk_pct < 18:
         risk_label, risk_bg, risk_tc = "Moderate risk", "#FAEEDA", "#854F0B"
-        advice = "Consider heightened pre-op optimisation. Review airway, vascular anatomy, and prior surgical history with access team."
+        advice = "Near or above population average. Consider pre-operative optimisation and heightened intraoperative monitoring."
     else:
         risk_label, risk_bg, risk_tc = "High risk",     "#FCEBEB", "#A32D2D"
-        advice = "Multidisciplinary review recommended. Discuss operative staging, anaesthetic risk, and whether procedure should proceed."
+        advice = "Significantly above population average. Multidisciplinary review recommended before proceeding."
 
     with col_out:
         # Risk score card
