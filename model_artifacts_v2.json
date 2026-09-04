@@ -1,0 +1,40 @@
+{
+  "intercept": -5.682986,
+  "features": [
+    "Age",
+    "Sex_Binary",
+    "BMI",
+    "ASA",
+    "Prior_Abd_Surg_Flag",
+    "Revision_Flag",
+    "ET",
+    "ST",
+    "L5-S1_flag",
+    "L4-5_flag",
+    "L3-4_flag",
+    "L2-3_flag"
+  ],
+  "coefficients": {
+    "Age": 0.042571,
+    "Sex_Binary": -0.089057,
+    "BMI": -0.018633,
+    "ASA": 0.600239,
+    "Prior_Abd_Surg_Flag": 0.165019,
+    "Revision_Flag": -0.679349,
+    "ET": 0.005485,
+    "ST": 0.015867,
+    "L5-S1_flag": 0.708988,
+    "L4-5_flag": -0.276087,
+    "L3-4_flag": -1.513543,
+    "L2-3_flag": -0.189197
+  },
+  "auc_cv": 0.71,
+  "n": 331,
+  "events": 52,
+  "et_prefill": {
+    "L5-S1 only": 15,
+    "L4-5 only": 25,
+    "L4-S1": 30,
+    "L3-S1": 30
+  }
+}

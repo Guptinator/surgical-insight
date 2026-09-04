@@ -1,0 +1,32 @@
+{
+  "outcome_definition": "Composite 30-day: ER revisit + major vascular injury (>300cc) + wound infection + DVT + elevated SBP + rectus collection. EXCLUDED: transfusion, minor vascular injury (<300cc)",
+  "n_total": 331,
+  "n_events": 40,
+  "event_rate": 0.1208,
+  "auc_M1": 0.628,
+  "auc_M2": 0.636,
+  "auc_M3": 0.611,
+  "auc_V2": 0.656,
+  "v2_intercept": -4.906833,
+  "v2_coefficients": {
+    "Age": 0.034247,
+    "Sex_Binary": -0.143925,
+    "BMI": -0.00224,
+    "ASA": 0.744342,
+    "Prior_Abd_Surg_Flag": -0.110304,
+    "Revision_Flag": -0.293293,
+    "ET": 0.016461,
+    "ST": 0.002817,
+    "L5-S1_flag": 0.826788,
+    "L4-5_flag": -0.472654,
+    "L3-4_flag": -1.178696,
+    "L2-3_flag": -0.168528
+  },
+  "et_prefill": {
+    "L5-S1 only": 15,
+    "L4-5 only": 25,
+    "L4-S1": 30,
+    "L3-S1": 30,
+    "other": 17
+  }
+}
