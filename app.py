@@ -192,10 +192,11 @@ def metric_card(label, value, sub=None):
 
 
 def plotly_defaults():
+    """Base plotly layout — no margin (callers can pass their own)."""
     return dict(
-        plot_bgcolor="white", paper_bgcolor="white",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
         font=dict(family="Arial", size=11, color="#333333"),
-        margin=dict(l=50, r=30, t=40, b=50),
     )
 
 
@@ -651,8 +652,7 @@ with tabs[4]:
         fig.update_layout(**plotly_defaults(), height=240,
                           xaxis_title="Exposure time (min)",
                           yaxis_title="Complication probability (%)",
-                          yaxis_range=[0, 100], showlegend=False,
-                          margin=dict(l=50, r=20, t=20, b=50))
+                          yaxis_range=[0, 100], showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
         # Driver table
