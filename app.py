@@ -141,17 +141,16 @@ COLORS = {
 # ── Calibrated ALIF risk model (AUC 0.613, properly calibrated probabilities) ──
 # Fit WITHOUT class_weight — intercept reflects true base rate (~12.1%)
 # Level flags removed (collinear at n=331); Num_Levels count used instead
-INTERCEPT_V2 = -5.7705
+INTERCEPT_V2 = -5.9205
 COEF_V2 = {
-    "Age":                +0.0392,
-    "Sex_Binary":         -0.1863,
-    "BMI":                +0.0057,
-    "ASA":                +0.5797,
-    "Prior_Abd_Surg_Flag":-0.1415,
-    "Revision_Flag":      -0.1789,
-    "ET":                 +0.0109,
-    "ST":                 +0.0030,
-    "Num_Levels":         -0.3850,
+    "Age":                +0.0364,
+    "Sex_Binary":         -0.1754,
+    "BMI":                +0.0080,
+    "ASA":                +0.5969,
+    "Prior_Abd_Surg_Flag":-0.1291,
+    "Revision_Flag":      -0.1301,
+    "ET":                 +0.0045,
+    "ST":                 +0.0015,
 }
 ET_PREFILL = {
     "L5-S1 only": 15, "L4-5 only": 25, "L4-S1": 30, "L3-S1": 30, "other": 17,
@@ -164,14 +163,21 @@ def calc_et_prefill(l5, l4, l3, l2):
     return ET_PREFILL["L5-S1 only"]
 
 def alif_risk_v2(age, sex, bmi, asa, abd, rev, et, st, l5, l4, l3, l2):
-    """Calibrated. Expected range: ~3% (lowest risk) to ~25% (highest risk)."""
-    num_levels = l5 + l4 + l3 + l2
+    """
+    Calibrated logistic model. Probabilities reflect true base rate (~12.1%).
+    Expected range: ~3% (low risk) to ~30% (high risk).
+    Operative levels retained as inputs for ET pre-fill but not in model —
+    insufficient power to estimate level effects reliably at n=331.
+    """
     logit = (INTERCEPT_V2
-             + COEF_V2["Age"]*age + COEF_V2["Sex_Binary"]*sex
-             + COEF_V2["BMI"]*bmi + COEF_V2["ASA"]*asa
-             + COEF_V2["Prior_Abd_Surg_Flag"]*abd + COEF_V2["Revision_Flag"]*rev
-             + COEF_V2["ET"]*et + COEF_V2["ST"]*st
-             + COEF_V2["Num_Levels"]*num_levels)
+             + COEF_V2["Age"]*age
+             + COEF_V2["Sex_Binary"]*sex
+             + COEF_V2["BMI"]*bmi
+             + COEF_V2["ASA"]*asa
+             + COEF_V2["Prior_Abd_Surg_Flag"]*abd
+             + COEF_V2["Revision_Flag"]*rev
+             + COEF_V2["ET"]*et
+             + COEF_V2["ST"]*st)
     return float(np.clip(1 / (1 + np.exp(-logit)), 0.01, 0.99))
 
 def logistic_prob(age, sex, bmi, asa, abd, rev, et, st, hs, lvl, spondy=0):
@@ -702,7 +708,7 @@ with tabs[5]:
         "All inputs can be manually adjusted."
     )
     st.caption(f"Model: Logistic regression retrained with anatomical level flags · "
-               f"AUC = 0.613 (5-fold CV, calibrated) · n=331 · 40 events · base rate 12.1%")
+               f"AUC = 0.607 (5-fold CV, calibrated) · n=331 · 40 events · base rate 12.1%")
     st.markdown("---")
 
     col_inp, col_out = st.columns([1, 1])
@@ -717,7 +723,10 @@ with tabs[5]:
         rc_rev  = st.selectbox("Revision surgery", ["No","Yes"], key="rc_rev")
 
         st.markdown("**Planned operative levels**")
-        st.caption("Select all levels to be fused. Exposure time will be pre-filled.")
+        st.caption("Select levels to be fused — auto-fills typical exposure time. "
+                   "Note: level selection affects ET pre-fill only; the risk model "
+                   "uses patient demographics and procedural time, not level flags, "
+                   "as level effects are not reliably estimable at this sample size.")
         rc_l5 = st.checkbox("L5-S1", value=True,  key="rc_l5")
         rc_l4 = st.checkbox("L4-5",  value=False, key="rc_l4")
         rc_l3 = st.checkbox("L3-4",  value=False, key="rc_l3")
