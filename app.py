@@ -9,7 +9,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import io, os, base64, hashlib
+import io, os, base64
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -22,72 +22,12 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════════
 # LOGIN SYSTEM
 # Add or remove users below. Passwords are stored as SHA-256 hashes.
-# To generate a hash for a new password, run this in Python:
-#   import hashlib; print(hashlib.sha256("yourpassword".encode()).hexdigest())
-# ══════════════════════════════════════════════════════════════════════════════
 
-USERS = {
-    "Jay":      hashlib.sha256("Rockford".encode()).hexdigest(),
-    "admin":    hashlib.sha256("surgical2024".encode()).hexdigest(),
-}
 
-def check_login(username, password):
-    hashed = hashlib.sha256(password.encode()).hexdigest()
-    return USERS.get(username) == hashed
 
-def show_login():
-    # Centre the login box
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style='text-align:center; margin-bottom:24px;'>
-            <div style='font-size:2.5rem;'>🏥</div>
-            <div style='font-size:1.4rem; font-weight:600; color:#1A2E4A;'>
-                Surgical Analytics Dashboard
-            </div>
-            <div style='font-size:0.85rem; color:#888780; margin-top:6px;'>
-                Anterior lumbar approach · 331 patients · AL-LIF Retro
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        with st.form("login_form"):
-            username = st.text_input("Username", placeholder="Enter username")
-            password = st.text_input("Password", type="password",
-                                     placeholder="Enter password")
-            submitted = st.form_submit_button("Sign in", use_container_width=True)
-
-            if submitted:
-                if check_login(username, password):
-                    st.session_state["logged_in"] = True
-                    st.session_state["username"] = username
-                    st.rerun()
-                else:
-                    st.error("Incorrect username or password.")
-
-        st.markdown("""
-        <div style='text-align:center; margin-top:16px;
-                    font-size:0.75rem; color:#AAAAAA;'>
-            Authorised users only · De-identified surgical data
-        </div>
-        """, unsafe_allow_html=True)
-
-# ── Check login state ─────────────────────────────────────────────────────────
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-
-if not st.session_state["logged_in"]:
-    show_login()
-    st.stop()   # Everything below only runs if logged in
 
 # ── Sidebar logout ────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown(f"👤 **{st.session_state['username']}**")
-    if st.button("Sign out", use_container_width=True):
-        st.session_state["logged_in"] = False
-        st.session_state["username"] = ""
-        st.rerun()
     st.markdown("---")
 
 # ── Custom CSS ────────────────────────────────────────────────────────────────
@@ -908,5 +848,5 @@ with tabs[5]:
         "retrospective cohort (n=331). Predictions should inform — not replace — clinical "
         "judgment. External prospective validation is required before deployment in "
         "clinical practice. Model AUC = 0.710 (5-fold CV). "
-        "Open-source code: github.com/Vinay61114/surgical-analytics"
+        "Open-source code: github.com/Guptinator/surgical-insight"
     )
